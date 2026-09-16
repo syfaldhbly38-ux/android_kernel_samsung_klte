@@ -1,0 +1,36 @@
+name: Build NetHunter Kernel for klteduos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Kernel
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git bc libssl-dev libncurses5-dev flex bison
+
+      - name: Download Toolchain
+        run: |
+          mkdir -p $HOME/build/toolchain
+          cd $HOME/build/toolchain
+          wget https://releases.linaro.org/components/toolchain/binaries/4.9-2016.02/arm-linux-gnueabihf/gcc-linaro-4.9.2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+          tar -xf gcc-linaro-4.9.2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+
+      - name: Build Kernel
+        run: |
+          chmod +x build.sh
+          ./build.sh duos
+
+      - name: Upload Kernel
+        uses: actions/upload-artifact@v3
+        with:
+          name: nethunter-kernel-klteduos
+          path: build/arch/arm/boot/
